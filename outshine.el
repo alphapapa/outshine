@@ -2357,6 +2357,10 @@ overwritten, and the table is not marked as requiring realignment."
 ;; trigger company idle completion like namesake command
 (put 'outshine-self-insert-command 'company-begin t)
 
+;; trigger eldoc (elisp help in echo area), like `self-insert-command'
+(with-eval-after-load 'eldoc
+  (eldoc-add-command 'outshine-self-insert-command))
+
 ;;;;; Other Commands
 
 (defun outshine-eval-lisp-subtree ()
