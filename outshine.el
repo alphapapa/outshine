@@ -2358,8 +2358,8 @@ overwritten, and the table is not marked as requiring realignment."
 (put 'outshine-self-insert-command 'company-begin t)
 
 ;; trigger eldoc (elisp help in echo area), like `self-insert-command'
-(with-eval-after-load 'eldoc
-  (eldoc-add-command 'outshine-self-insert-command))
+(eval-after-load 'eldoc
+  '(eldoc-add-command 'outshine-self-insert-command))
 
 ;;;;; Other Commands
 
