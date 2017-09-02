@@ -1334,7 +1334,8 @@ top-level heading first."
        (,heading-5-regexp 1 'outshine-level-5 t)
        (,heading-6-regexp 1 'outshine-level-6 t)
        (,heading-7-regexp 1 'outshine-level-7 t)
-       (,heading-8-regexp 1 'outshine-level-8 t)))))
+       (,heading-8-regexp 1 'outshine-level-8 t)))
+    (font-lock-flush)))
 
 
 ;;;;; Functions for speed-commands
