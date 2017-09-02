@@ -727,6 +727,29 @@ any other entries, and any resulting duplicates will be removed entirely."
   :group 'outshine
   :type 'boolean)
 
+(defcustom outshine-fontify t
+  ;; `quote' instead of ' to avoid conversion of ' in for example C-h v
+  ;; (`describe-variable').
+  "When to fontify the outshine headings in a buffer.
+
+Possible values are:
+
+ `t'        Always (the default).
+ `nil'      Never.
+ function   A Lisp predicate function with no arguments. For example
+            `(lambda () (not (derived-mode-p (quote prog-mode))))'
+            fontifies only when not in a programming mode.
+
+`t' and `nil' can be used for a file local variable to make an
+exception for certain files or to be independent of the user's
+customization."
+  :group 'outshine
+  :type '(choice :value ""
+                 (const :tag "Always (the default)" t)
+                 (const :tag "Never" nil)
+                 (function :tag "Function"))
+  :safe (lambda (v) (memq v '(t nil))))
+
 ;; from `org'
 (defcustom outshine-fontify-whole-heading-line nil
   "Non-nil means fontify the whole line for headings.
@@ -1571,7 +1594,16 @@ function was called upon."
      out-regexp
      'outshine-calc-outline-level
      outshine-outline-heading-end-regexp)
-    (outshine-fontify-headlines out-regexp)
+    (when (cond ((memq outshine-fontify '(t nil))
+                 outshine-fontify)
+                ((functionp outshine-fontify)
+                 (funcall outshine-fontify))
+                (t
+                 (message "Unknown value of `outshine-fontify'")
+                 (ding)
+                 (sit-for 1)
+                 t))
+      (outshine-fontify-headlines out-regexp))
     (setq outline-promotion-headings
           (outshine-make-promotion-headings-list 8))
     ;; imenu preparation
