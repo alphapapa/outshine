@@ -1594,16 +1594,6 @@ function was called upon."
      out-regexp
      'outshine-calc-outline-level
      outshine-outline-heading-end-regexp)
-    (when (cond ((memq outshine-fontify '(t nil))
-                 outshine-fontify)
-                ((functionp outshine-fontify)
-                 (funcall outshine-fontify))
-                (t
-                 (message "Unknown value of `outshine-fontify'")
-                 (ding)
-                 (sit-for 1)
-                 t))
-      (outshine-fontify-headlines out-regexp))
     (setq outline-promotion-headings
           (outshine-make-promotion-headings-list 8))
     ;; imenu preparation
@@ -1615,11 +1605,17 @@ function was called upon."
 	     (add-to-list 'imenu-generic-expression
                           (car outshine-imenu-preliminary-generic-expression))
            (setq imenu-generic-expression
-                 outshine-imenu-preliminary-generic-expression))))
-  (when outshine-startup-folded-p
-    (condition-case error-data
-        (outline-hide-sublevels 1)
-      ('error (message "No outline structure detected")))))
+                 outshine-imenu-preliminary-generic-expression)))
+    (when outshine-startup-folded-p
+      (condition-case error-data
+          (outline-hide-sublevels 1)
+        ('error (message "No outline structure detected"))))
+    (when (pcase outshine-fontify
+            ('t t)
+            ('nil nil)
+            ((pred functionp) (funcall outshine-fontify))
+            (_ (user-error "Invalid value for variable `outshine-fontify'")))
+      (outshine-fontify-headlines out-regexp))))
 
 ;; ;; add this to your .emacs
 ;; (add-hook 'outline-minor-mode-hook 'outshine-hook-function)
