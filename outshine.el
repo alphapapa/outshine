@@ -2159,7 +2159,7 @@ may have changed."
 ;; Copied from: http://emacswiki.org/emacs/OutlineMinorMode
 
 ;; altered version of `outline-on-heading-p' that works even if heading is read-only
-;; (e.g. in some comint buffers)
+;; (e.g. in some comint buffers), so that you can hide/show their contents.
 (defun outline-on-heading-p (&optional invisible-ok)
   "Return t if point is on a (visible) heading line.
 If INVISIBLE-OK is non-nil, an invisible heading line is ok too."
