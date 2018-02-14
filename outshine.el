@@ -2158,6 +2158,16 @@ may have changed."
 
 ;; Copied from: http://emacswiki.org/emacs/OutlineMinorMode
 
+;; altered version of `outline-on-heading-p' that works even if heading is in a different field
+;; (e.g. in some comint buffers), so that you can hide/show their contents.
+(defun outline-on-heading-p (&optional invisible-ok)
+  "Return t if point is on a (visible) heading line.
+If INVISIBLE-OK is non-nil, an invisible heading line is ok too."
+  (save-excursion
+    (forward-line 0)
+    (and (bolp) (or invisible-ok (not (outline-invisible-p)))
+	 (looking-at outline-regexp))))
+
 (defun outline-body-p ()
   (save-excursion
     (outline-back-to-heading)
