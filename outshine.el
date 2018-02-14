@@ -2158,7 +2158,7 @@ may have changed."
 
 ;; Copied from: http://emacswiki.org/emacs/OutlineMinorMode
 
-;; altered version of `outline-on-heading-p' that works even if heading is read-only
+;; altered version of `outline-on-heading-p' that works even if heading is in a different field
 ;; (e.g. in some comint buffers), so that you can hide/show their contents.
 (defun outline-on-heading-p (&optional invisible-ok)
   "Return t if point is on a (visible) heading line.
