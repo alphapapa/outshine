@@ -1918,7 +1918,7 @@ If yes, return this character."
 ;;;;;; Commands from `outline-magic'
 
 (defun outshine-next-line ()
-  "Forward line, but mover over invisible line ends.
+  "Forward line, but move over invisible line ends.
 Essentially a much simplified version of `next-line'."
   (interactive)
   (beginning-of-line 2)
@@ -1948,131 +1948,122 @@ Essentially a much simplified version of `next-line'."
   (interactive "P")
   (setq deactivate-mark t)
   (cond
-
-   ((equal arg '(4))
-    ;; Run `outshine-cycle' as if at the top of the buffer.
-    (let ((outshine-org-style-global-cycling-at-bob-p nil)
-          (current-prefix-arg nil))
+   ((or (equal arg '(4)) ;; overriding C-u universal arg
+        (and
+         (bobp)
+         ;; outline-magic style behaviour - always cycle at bob
+         (or (not outshine-org-style-global-cycling-at-bob-p)
+             ;; org-mode style behaviour - only cycle if not on a heading
+             (not (outline-on-heading-p)))))
+    ;; Global cycling
+    (outshine-cycle-buffer))
+   ((derived-mode-p 'org-mode)
+    (org-cycle arg))
+   ((save-excursion (forward-line 0) (looking-at outline-regexp))
+    ;; At a heading: rotate between three different views
+    (outline-back-to-heading)
+    (let (beg eoh eol eos has-children)
+      ;; First, some boundaries
       (save-excursion
-        (goto-char (point-min))
-        (outshine-cycle nil))))
-
-   (t
-    (cond
-     ;; Beginning of buffer: Global cycling
-     ((or
-       ;; outline-magic style behaviour
-       (and
-        (bobp)
-        (not outshine-org-style-global-cycling-at-bob-p))
-       ;; org-mode style behaviour
-       (and
-        (bobp)
-        (not (outline-on-heading-p))
-        outshine-org-style-global-cycling-at-bob-p))
+        (setq beg (point))
+        (save-excursion (outshine-next-line) (setq eol (point)))
+        (outline-end-of-heading) (setq eoh (point))
+        (outline-end-of-subtree) (setq eos (point))
+        ;; has-children is nil if no other heading between heading and end of subtree:
+        (goto-char beg) (end-of-line)
+        (setq has-children (re-search-forward outline-regexp eos 'noerror)))
+      ;; Find out what to do next and set `this-command'
       (cond
-       ((eq last-command 'outshine-cycle-overview)
-        ;; We just created the overview - now do table of contents
-        ;; This can be slow in very large buffers, so indicate action
-        (unless outshine-cycle-silently
-          (message "CONTENTS..."))
-        (save-excursion
-          ;; Visit all headings and show their offspring
-          (goto-char (point-max))
-          (catch 'exit
-            (while (and (progn (condition-case nil
-                                   (outline-previous-visible-heading 1)
-                                 (error (goto-char (point-min))))
-                               t)
-                        (looking-at outline-regexp))
-              (show-branches)
-              (if (bobp) (throw 'exit nil))))
-          (unless outshine-cycle-silently
-            (message "CONTENTS...done")))
-        (setq
-         this-command 'outshine-cycle-toc
-         outshine-current-buffer-visibility-state 'contents))
-       ((eq last-command 'outshine-cycle-toc)
-        ;; We just showed the table of contents - now show everything
-        (show-all)
-        (unless outshine-cycle-silently
-          (message "SHOW ALL"))
-        (setq
-         this-command 'outshine-cycle-showall
-         outshine-current-buffer-visibility-state 'all))
+       ((= eos eoh)
+        ;; Nothing is hidden behind this heading
+        (outshine--cycle-message "EMPTY ENTRY"))
+       ((>= eol eos)
+        ;; Entire subtree is hidden in one line: open it
+        (if has-children
+            (progn
+              (outline-show-entry)
+              (outline-show-children)
+              (outshine--cycle-message "CHILDREN")
+              (setq this-command 'outshine-cycle-children))
+          (outline-show-subtree)
+          (outshine--cycle-message "SUBTREE (NO CHILDREN)")))
+       ((eq last-command 'outshine-cycle-children)
+        ;; We just showed the children, now show everything.
+        (outline-show-subtree)
+        (outshine--cycle-message "SUBTREE"))
        (t
-        ;; Default action: go to overview
-        ;; (hide-sublevels 1)
-        (let ((toplevel
-               (cond
-                (current-prefix-arg
-                 (prefix-numeric-value current-prefix-arg))
-                ((save-excursion
-                   (beginning-of-line)
-                   (looking-at outline-regexp))
-                 (max 1 (funcall outline-level)))
-                (t 1))))
-          (hide-sublevels toplevel))
-        (unless outshine-cycle-silently
-          (message "OVERVIEW"))
-        (setq
-         this-command 'outshine-cycle-overview
-         outshine-current-buffer-visibility-state 'overview))))
+        ;; Default action: hide the subtree.
+        (outline-hide-subtree)
+        (outshine--cycle-message "FOLDED")))))
 
-     ((save-excursion (beginning-of-line 1) (looking-at outline-regexp))
-      ;; At a heading: rotate between three different views
-      (outline-back-to-heading)
-      (let ((goal-column 0) beg eoh eol eos)
-        ;; First, some boundaries
-        (save-excursion
-          (outline-back-to-heading)            (setq beg (point))
-          (save-excursion (outshine-next-line) (setq eol (point)))
-          (outline-end-of-heading)             (setq eoh (point))
-          (outline-end-of-subtree)             (setq eos (point)))
-        ;; Find out what to do next and set `this-command'
-        (cond
-         ((= eos eoh)
-          ;; Nothing is hidden behind this heading
-          (unless outshine-cycle-silently
-            (message "EMPTY ENTRY")))
-         ((>= eol eos)
-          ;; Entire subtree is hidden in one line: open it
-          (show-entry)
-          (show-children)
-          (unless outshine-cycle-silently
-            (message "CHILDREN"))
-          (setq
-           this-command 'outshine-cycle-children))
-         ;; outshine-current-buffer-visibility-state 'children))
-         ((eq last-command 'outshine-cycle-children)
-          ;; We just showed the children, now show everything.
-          (show-subtree)
-          (unless outshine-cycle-silently
-            (message "SUBTREE")))
-         (t
-          ;; Default action: hide the subtree.
-          (hide-subtree)
-          (unless outshine-cycle-silently
-            (message "FOLDED"))))))
+   ;; Not at a headline
+   ((outshine-cycle-emulate-tab) ; TAB emulation: Do indent-relative
+    (indent-relative))
+   (t (outline-back-to-heading))))
 
-     ;; TAB emulation
-     ((outshine-cycle-emulate-tab)
-      (indent-relative))
-
+(defun outshine-cycle-buffer (&optional arg)
+  "Cycle the visibility state of buffer.
+With a numeric prefix, show all headlines up to that level."
+  (interactive "P")
+  (save-excursion
+    (goto-char (point-min))
+    (cond
+     ((derived-mode-p 'org-mode)
+      (org-global-cycle arg))
+     ((integerp arg)
+      (outline-show-all)
+      (outline-hide-sublevels arg))
+     ((eq last-command 'outshine-cycle-overview)
+      ;; We just created the overview - now do table of contents
+      ;; This can be slow in very large buffers, so indicate action
+      (outshine--cycle-message "CONTENTS...")
+      ;; Visit all headings and show their offspring
+      (goto-char (point-max))
+      (while (and
+              (not (bobp))
+              (progn (condition-case nil
+                         (outline-previous-visible-heading 1)
+                       (error (goto-char (point-min))))
+                     t)
+              (looking-at outline-regexp))
+        (outline-show-branches)
+        (outline-hide-leaves))
+      (outshine--cycle-message "CONTENTS...done")
+      (setq this-command 'outshine-cycle-toc
+            outshine-current-buffer-visibility-state 'contents))
+     ((eq last-command 'outshine-cycle-toc)
+      ;; We just showed the table of contents - now show everything
+      (outline-show-all)
+      (outshine--cycle-message "SHOW ALL")
+      (setq this-command 'outshine-cycle-showall
+            outshine-current-buffer-visibility-state 'all))
      (t
-      ;; Not at a headline: Do indent-relative
-      (outline-back-to-heading))))))
+      ;; Default action: go to overview
+      (let ((toplevel
+             (cond
+              (current-prefix-arg
+               (prefix-numeric-value current-prefix-arg))
+              ((save-excursion
+                 (beginning-of-line)
+                 (looking-at outline-regexp))
+               (max 1 (funcall outline-level)))
+              (t 1))))
+        (outline-hide-sublevels toplevel))
+      (outshine--cycle-message "OVERVIEW")
+      (setq this-command 'outshine-cycle-overview
+            outshine-current-buffer-visibility-state 'overview)))))
 
-(defun outshine-cycle-buffer ()
-  "Cycle the visibility state of buffer."
-  (interactive)
-  (outshine-cycle '(4)))
+(defun outshine--cycle-message (msg)
+  "Display MSG, but avoid logging it in the *Messages* buffer."
+  (unless outshine-cycle-silently
+    (let ((message-log-max nil))
+      (message msg))))
 
 (defun outshine-toggle-silent-cycling (&optional arg)
   "Toggle silent cycling between visibility states.
 
   When silent cycling is off, visibility state-change messages are
-  written to stdout (i.e. the *Messages* buffer), otherwise these
+  displayed in the minibuffer but not logged to the *Messages* buffer.
   messages are suppressed. With prefix argument ARG, cycle silently
   if ARG is positive, otherwise write state-change messages."
   (interactive "P")
@@ -2082,8 +2073,6 @@ Essentially a much simplified version of `next-line'."
           (> (prefix-numeric-value arg) 0)))
   (message "Silent visibility cycling %s"
            (if outshine-cycle-silently "enabled" "disabled")))
-
-
 
 ;;;;;; Commands from `outline-mode-easy-bindings'
 
