@@ -1931,9 +1931,7 @@ If not, return to the original position and throw an error."
 
 
 (defun outshine-self-insert-command (N)
-  "Like `self-insert-command', use overwrite-mode for whitespace in tables.
-If the cursor is in a table looking at whitespace, the whitespace is
-overwritten, and the table is not marked as requiring realignment."
+  "Like `self-insert-command' but performs speed commands at the beginning of headlines."
   (interactive "p")
   ;; (outshine-check-before-invisible-edit 'insert)
   (cond
