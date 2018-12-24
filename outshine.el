@@ -1295,23 +1295,6 @@ Use `outshine-speed-commands-user' for further customization."
     (cdr (assoc keys (append outshine-speed-commands-user
                              outshine-speed-commands-default)))))
 
-(defun outshine-defkey (keymap key def)
-  "Define a KEY in a KEYMAP with definition DEF."
-  (define-key keymap key def))
-
-(defun outshine-remap (map &rest commands)
-  "In MAP, remap the functions given in COMMANDS.
-COMMANDS is a list of alternating OLDDEF NEWDEF command names."
-  (let (new old)
-    (while commands
-      (setq old (pop commands) new (pop commands))
-      (if (fboundp 'command-remapping)
-          (outshine-defkey map (vector 'remap old) new)
-        (substitute-key-definition old new map global-map)))))
-
-(outshine-remap outshine-mode-map
-                'self-insert-command 'outshine-self-insert-command)
-
 ;;;;; Functions for hiding comment-subtrees
 
 (defun outshine-hide-comment-subtrees-in-region (beg end)
@@ -2387,6 +2370,9 @@ marking subtree (and subsequently run the tex command)."
 ;;;; Keybindings
 
 ;;;;; Principal Keybindings
+
+(define-key outshine-mode-map
+  [remap self-insert-command] 'outshine-self-insert-command)
 
 ;; Adapted from `org-mode' and `outline-mode-easy-bindings'.
 
