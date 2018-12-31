@@ -1998,11 +1998,15 @@ Essentially a much simplified version of `next-line'."
       ;; Not at a headline: Do indent-relative
       (outline-back-to-heading))))))
 
-(defun outshine-cycle-buffer ()
-  "Cycle the visibility state of buffer."
-  (interactive)
+(defun outshine-cycle-buffer (&optional arg)
+  "Cycle the visibility state of buffer.
+With a numeric prefix, show all headlines up to that level."
+  (interactive "P")
   (save-excursion
     (cond
+     ((integerp arg)
+      (outline-show-all)
+      (outline-hide-sublevels arg))
      ((eq last-command 'outshine-cycle-overview)
       ;; We just created the overview - now do table of contents
       ;; This can be slow in very large buffers, so indicate action
