@@ -1966,8 +1966,7 @@ Essentially a much simplified version of `next-line'."
        ((eq last-command 'outshine-cycle-overview)
         ;; We just created the overview - now do table of contents
         ;; This can be slow in very large buffers, so indicate action
-        (unless outshine-cycle-silently
-          (message "CONTENTS..."))
+        (outshine--cycle-message "CONTENTS...")
         (save-excursion
           ;; Visit all headings and show their offspring
           (goto-char (point-max))
@@ -1979,16 +1978,14 @@ Essentially a much simplified version of `next-line'."
                         (looking-at outline-regexp))
               (show-branches)
               (if (bobp) (throw 'exit nil))))
-          (unless outshine-cycle-silently
-            (message "CONTENTS...done")))
+          (outshine--cycle-message "CONTENTS...done"))
         (setq
          this-command 'outshine-cycle-toc
          outshine-current-buffer-visibility-state 'contents))
        ((eq last-command 'outshine-cycle-toc)
         ;; We just showed the table of contents - now show everything
         (show-all)
-        (unless outshine-cycle-silently
-          (message "SHOW ALL"))
+        (outshine--cycle-message "SHOW ALL")
         (setq
          this-command 'outshine-cycle-showall
          outshine-current-buffer-visibility-state 'all))
@@ -2005,8 +2002,7 @@ Essentially a much simplified version of `next-line'."
                  (max 1 (funcall outline-level)))
                 (t 1))))
           (hide-sublevels toplevel))
-        (unless outshine-cycle-silently
-          (message "OVERVIEW"))
+        (outshine--cycle-message "OVERVIEW")
         (setq
          this-command 'outshine-cycle-overview
          outshine-current-buffer-visibility-state 'overview))))
@@ -2025,26 +2021,22 @@ Essentially a much simplified version of `next-line'."
         (cond
          ((= eos eoh)
           ;; Nothing is hidden behind this heading
-          (unless outshine-cycle-silently
-            (message "EMPTY ENTRY")))
+          (outshine--cycle-message "EMPTY ENTRY"))
          ((>= eol eos)
           ;; Entire subtree is hidden in one line: open it
-          (show-entry)
-          (show-children)
-          (unless outshine-cycle-silently
-            (message "CHILDREN"))
+          (outline-show-entry)
+          (outline-show-children)
+          (outshine--cycle-message "CHILDREN")
           (setq
            this-command 'outshine-cycle-children))
          ((eq last-command 'outshine-cycle-children)
           ;; We just showed the children, now show everything.
           (show-subtree)
-          (unless outshine-cycle-silently
-            (message "SUBTREE")))
+          (outshine--cycle-message "SUBTREE"))
          (t
           ;; Default action: hide the subtree.
           (hide-subtree)
-          (unless outshine-cycle-silently
-            (message "FOLDED"))))))
+          (outshine--cycle-message "FOLDED")))))
 
      ;; TAB emulation
      ((outshine-cycle-emulate-tab)
@@ -2059,13 +2051,19 @@ Essentially a much simplified version of `next-line'."
   (interactive)
   (outshine-cycle '(4)))
 
+(defun outshine--cycle-message (msg)
+  "Display MSG, but avoid logging it in the *Messages* buffer."
+  (unless outshine-cycle-silently
+    (let ((message-log-max nil))
+      (message msg))))
+
 (defun outshine-toggle-silent-cycling (&optional arg)
   "Toggle silent cycling between visibility states.
 
   When silent cycling is off, visibility state-change messages are
-  written to stdout (i.e. the *Messages* buffer), otherwise these
-  messages are suppressed. With prefix argument ARG, cycle silently
-  if ARG is positive, otherwise write state-change messages."
+  displayed in the minibuffer but not logged to the *Messages* buffer.
+  With prefix argument ARG, cycle silently if ARG is positive,
+  otherwise write state-change messages."
   (interactive "P")
   (setq outshine-cycle-silently
         (if (null arg)
