@@ -33,11 +33,11 @@
 ;;  - NEXT  :: modified, but not finished
 ;;  - WAITING :: work paused due to unsolved problems
 ;;  - DONE  :: finished and tested
-;;  - CANCELLED :: makes no sense, or too difficult 
+;;  - CANCELLED :: makes no sense, or too difficult
 
 ;;;; Fundamental Problems to be solved
 
-;;;;; Outshine Agenda 
+;;;;; Outshine Agenda
 
 ;;;;; Outshine Clocking
 
@@ -76,34 +76,34 @@ When RESTRICTION-LOCK is given, act conditional on its value:
 Use current-buffer and point position, unless BUF-OR-NAME and/or
 POS are non-nil."
   (let* ((temporary-file-directory outshine-temporary-directory)
-	 (curr-agenda-file (make-temp-file "outshine-" nil ".org"))
-	 (buf (if (and buf-or-name (buffer-file-name buf-or-name))
-		  buf-or-name
-		(current-buffer)))
-	 (pos (if (and pos (integer-or-marker-p pos)
-		       (<= pos (buffer-size buf)))
-		  pos
-		(point))))
+         (curr-agenda-file (make-temp-file "outshine-" nil ".org"))
+         (buf (if (and buf-or-name (buffer-file-name buf-or-name))
+                  buf-or-name
+                (current-buffer)))
+         (pos (if (and pos (integer-or-marker-p pos)
+                       (<= pos (buffer-size buf)))
+                  pos
+                (point))))
     (with-current-buffer (find-file-noselect curr-agenda-file)
       (cond
        ((eq restriction-lock 'file)
-	(insert
-	 (with-current-buffer buf
-	   (outshine-get-outorg-edit-buffer-content))))
+        (insert
+         (with-current-buffer buf
+           (outshine-get-outorg-edit-buffer-content))))
        (restriction-lock
-	(insert
-	 (with-current-buffer buf
-	   (save-excursion
-	     (goto-char pos)
-	     (save-restriction
-	       (outshine-narrow-to-subtree)
-	       (outshine-get-outorg-edit-buffer-content))))))
+        (insert
+         (with-current-buffer buf
+           (save-excursion
+             (goto-char pos)
+             (save-restriction
+               (outshine-narrow-to-subtree)
+               (outshine-get-outorg-edit-buffer-content))))))
        (t (mapc
-	   (lambda (--file)
-	     (insert
-	      (outshine-get-outorg-edit-buffer-content --file))
-	     (forward-line 2))
-	   outshine-agenda-files)))
+           (lambda (--file)
+             (insert
+              (outshine-get-outorg-edit-buffer-content --file))
+             (forward-line 2))
+           outshine-agenda-files)))
       (save-buffer)
       (kill-buffer))
     curr-agenda-file))
@@ -130,54 +130,54 @@ If BUF-OR-NAME is non-nil, use it instead of current buffer. If
 NO-CHECK-P is non-nil, assume BUF-OR-NAME is ok (i.e. live and in
 latex-mode) and just use it."
   (catch 'exit
-  (let ((buf (cond
-	      ((and buf-or-name no-check-p) buf-or-name)
-	      ((and buf-or-name
-		    (buffer-live-p buf-or-name)
-		    (with-current-buffer buf-or-name
-		      (eq major-mode 'latex-mode)))
-	       buf-or-name)
-	      ((eq major-mode 'latex-mode) (current-buffer))
-	      (t (throw 'exit nil)))))
-    (with-current-buffer buf
-      (save-excursion
-	(save-restriction
-	  (widen)
-	  (goto-char (point-min))
-	  (re-search-forward outshine-latex-documentclass-regexp
-			     nil 'NOERROR 1)
-	  (org-no-properties (match-string 1))))))))
+    (let ((buf (cond
+                ((and buf-or-name no-check-p) buf-or-name)
+                ((and buf-or-name
+                      (buffer-live-p buf-or-name)
+                      (with-current-buffer buf-or-name
+                        (eq major-mode 'latex-mode)))
+                 buf-or-name)
+                ((eq major-mode 'latex-mode) (current-buffer))
+                (t (throw 'exit nil)))))
+      (with-current-buffer buf
+        (save-excursion
+          (save-restriction
+            (widen)
+            (goto-char (point-min))
+            (re-search-forward outshine-latex-documentclass-regexp
+                               nil 'NOERROR 1)
+            (org-no-properties (match-string 1))))))))
 
 ;;;; Use Outorg functions
 
 (defun outshine-comment-region (beg end &optional arg)
-       "Use comment-style that always inserts at BOL.
+  "Use comment-style that always inserts at BOL.
 Call `comment-region' with a comment-style that guarantees
    insertion of comment-start markers at beginning-of-line."
-       (interactive "r")
-       (let ((comment-style
-              (if (member comment-style '(indent-or-triple indent))
-                  'plain
-                comment-style)))
-         (comment-region beg end arg)))
+  (interactive "r")
+  (let ((comment-style
+         (if (member comment-style '(indent-or-triple indent))
+             'plain
+           comment-style)))
+    (comment-region beg end arg)))
 
 (defun outshine-get-outorg-edit-buffer-content (&optional buf-or-file)
   "Get content of buffer `outorg-edit-buffer-name.'
 Use current buffer for conversion, unless BUF-OR-FILE is given."
   (let (buf-strg)
     (with-current-buffer
-	(cond
-	 ((ignore-errors (file-exists-p buf-or-file))
-	  (find-file-noselect buf-or-file))
-	 ((ignore-errors (get-buffer buf-or-file))
-	  buf-or-file)
-	 (t (current-buffer)))
+        (cond
+         ((ignore-errors (file-exists-p buf-or-file))
+          (find-file-noselect buf-or-file))
+         ((ignore-errors (get-buffer buf-or-file))
+          buf-or-file)
+         (t (current-buffer)))
       (outshine-use-outorg
        (lambda ()
-	 (interactive)
-	 (setq buf-strg
-	       (buffer-substring-no-properties
-		(point-min) (point-max))))
+         (interactive)
+         (setq buf-strg
+               (buffer-substring-no-properties
+                (point-min) (point-max))))
        'WHOLE-BUFFER-P))
     buf-strg))
 
@@ -188,7 +188,7 @@ Use current buffer for conversion, unless BUF-OR-FILE is given."
   (setq outorg-org-finish-function-called-p t)
   (org-store-log-note)
   (outorg-copy-edits-and-exit))
-  ;; (exit-recursive-edit))
+;; (exit-recursive-edit))
 
 (defun outshine-use-outorg (fun &optional whole-buffer-p &rest funargs)
   "Use outorg to call FUN with FUNARGS on subtree or thing at point.
@@ -203,7 +203,7 @@ function was called upon."
   (save-excursion
     (unless (outline-on-heading-p)
       (or (outline-previous-heading)
-	  (outline-next-heading)))
+          (outline-next-heading)))
     (move-marker outshine-use-outorg-last-headline-marker (point)))
   (if whole-buffer-p
       (outorg-edit-as-org '(4))
@@ -227,25 +227,25 @@ Append rather than prepend if APPEND-P is given or
      (list
       current-prefix-arg
       (if (derived-mode-p 'dired-mode)
-	  (dired-get-marked-files)
-	(setq file-lst
-	      (cons
-	       (expand-file-name
-		(ido-read-file-name "New agenda file: "))
-	       file-lst))
-	(while (y-or-n-p "Add more files ")
-	  (setq file-lst
-		(cons (expand-file-name
-		       (ido-read-file-name "New agenda file: "))
-		      file-lst)))
-	file-lst))))
+          (dired-get-marked-files)
+        (setq file-lst
+              (cons
+               (expand-file-name
+                (ido-read-file-name "New agenda file: "))
+               file-lst))
+        (while (y-or-n-p "Add more files ")
+          (setq file-lst
+                (cons (expand-file-name
+                       (ido-read-file-name "New agenda file: "))
+                      file-lst)))
+        file-lst))))
   (if append-p
       (setq outshine-agenda-files
-	    (delq nil (append outshine-agenda-files
-			      (car-safe files))))
+            (delq nil (append outshine-agenda-files
+                              (car-safe files))))
     (setq outshine-agenda-files
-	  (delq nil (append (car-safe files)
-			    outshine-agenda-files)))))
+          (delq nil (append (car-safe files)
+                            outshine-agenda-files)))))
 
 (defun outshine-agenda-remove-files (&optional remove-all-p &rest files)
   "Remove FILES from `outshine-agenda-files'.
@@ -256,24 +256,24 @@ Remove all agenda-files if REMOVE-ALL-P is given or
      (list
       current-prefix-arg
       (unless current-prefix-arg
-	(setq file-lst
-	      (cons
-	       (org-completing-read "Remove agenda file: "
-				    outshine-agenda-files)
-	       file-lst))
-	(while (y-or-n-p "Remove more files ")
-	  (setq file-lst
-		(cons
-		 (org-completing-read "Remove agenda file: "
-				      outshine-agenda-files)
-		 file-lst)))
-	file-lst))))
+        (setq file-lst
+              (cons
+               (org-completing-read "Remove agenda file: "
+                                    outshine-agenda-files)
+               file-lst))
+        (while (y-or-n-p "Remove more files ")
+          (setq file-lst
+                (cons
+                 (org-completing-read "Remove agenda file: "
+                                      outshine-agenda-files)
+                 file-lst)))
+        file-lst))))
   (if remove-all-p
       (setq outshine-agenda-files nil)
     (mapc
      (lambda (--file)
        (setq outshine-agenda-files
-	     (remove --file outshine-agenda-files)))
+             (remove --file outshine-agenda-files)))
      (car-safe files))))
 
 (defun outshine-agenda-toggle-include-org-agenda (&optional arg)
@@ -287,7 +287,7 @@ exclude."
           (> (prefix-numeric-value arg) 0)))
   (message "Outshine Agenda: inclusion of Org Agenda files %s"
            (if outshine-agenda-include-org-agenda-p
-	       "enabled" "disabled")))
+               "enabled" "disabled")))
 
 (defun outshine-agenda (&optional agenda-file include-org-p)
   "Create Outshine Agenda, i.e. Org Agenda on outshine files.
@@ -300,20 +300,20 @@ With `current-prefix-arg' prompt the user for argument values."
    (when current-prefix-arg
      (list
       (ido-read-file-name "Agenda file: "
-			  outshine-temporary-directory)
+                          outshine-temporary-directory)
       (y-or-n-p "Include `org-agenda-files' "))))
   (let ((ag-file (or agenda-file
-		     (outshine-agenda-create-temporary-agenda-file)))
-	(with-org-agenda-files
-	 (or include-org-p outshine-agenda-include-org-agenda-p)))
+                     (outshine-agenda-create-temporary-agenda-file)))
+        (with-org-agenda-files
+         (or include-org-p outshine-agenda-include-org-agenda-p)))
     (require 'org-agenda)
     (org-agenda-remove-restriction-lock)
     (if with-org-agenda-files
-	;; FIXME
-	(message "Sorry, this is not yet implemented.")
+        ;; FIXME
+        (message "Sorry, this is not yet implemented.")
       (with-current-buffer (find-file-noselect ag-file)
-	(org-agenda-set-restriction-lock 'file)
-	(org-agenda)))))
+        (org-agenda-set-restriction-lock 'file)
+        (org-agenda)))))
 
 ;;;; Use Outorg for calling Org
 ;;;;; TODO org-add-note
@@ -322,7 +322,7 @@ With `current-prefix-arg' prompt the user for argument values."
 ;; (defun outshine-add-note(&optional arg)
 ;;   "Call outorg to trigger `org-add-note'."
 ;;   (interactive "P")
-      ;;   (outshine-use-outorg 'org-add-note nil arg))
+;;   (outshine-use-outorg 'org-add-note nil arg))
 
 ;;;;; TODO org-agenda
 
@@ -382,9 +382,9 @@ With prefix ARG given, restrict to current subtree, otherwise to
 current buffer(-file). "
   (interactive "P")
   (let ((ag-file
-	 (if arg
-	     (outshine-agenda-create-temporary-agenda-file t)
-	   (outshine-agenda-create-temporary-agenda-file 'file))))
+         (if arg
+             (outshine-agenda-create-temporary-agenda-file t)
+           (outshine-agenda-create-temporary-agenda-file 'file))))
     (outshine-agenda ag-file)))
 
 ;;;;; TODO org-agenda-to-appt
@@ -429,7 +429,7 @@ current buffer(-file). "
 ;;   (interactive "P")
 ;;   (outshine-use-outorg 'org-archive-subtree-default nil arg))
 
-;;;;; TODO org-archive-subtree-default-with-confirmation 
+;;;;; TODO org-archive-subtree-default-with-confirmation
 
 ;; ;; M-x org-archive-subtree-default-with-confirmation RET
 ;; (defun outshine-archive-subtree-default-with-confirmation(&optional arg)
@@ -1266,8 +1266,8 @@ current buffer(-file). "
   (interactive)
   (with-current-buffer
       (condition-case err
-	  (marker-buffer outshine-use-outorg-last-headline-marker)
-	(error "Can't find header with running clock: %s" err))
+          (marker-buffer outshine-use-outorg-last-headline-marker)
+        (error "Can't find header with running clock: %s" err))
     (goto-char outshine-use-outorg-last-headline-marker)
     (outshine-use-outorg 'org-clock-cancel)))
 
@@ -1290,7 +1290,7 @@ current buffer(-file). "
    (condition-case err
        (marker-buffer outshine-use-outorg-last-headline-marker)
      (error "Can't find header with running clock: %s" err)))
-   (goto-char outshine-use-outorg-last-headline-marker))
+  (goto-char outshine-use-outorg-last-headline-marker))
 
 ;;;;; DONE org-clock-in
 ;;     - State "DONE"       from "TODO"       [2016-02-07 So 19:43]
@@ -1322,8 +1322,8 @@ current buffer(-file). "
   (interactive)
   (with-current-buffer
       (condition-case err
-	  (marker-buffer outshine-use-outorg-last-headline-marker)
-	(error "Can't find header with running clock: %s" err))
+          (marker-buffer outshine-use-outorg-last-headline-marker)
+        (error "Can't find header with running clock: %s" err))
     (goto-char outshine-use-outorg-last-headline-marker)
     (outshine-use-outorg 'org-clock-out)))
 
@@ -1949,8 +1949,8 @@ current buffer(-file). "
   "Call outorg to trigger `org-export-dispatch'."
   (interactive "P")
   (outshine-use-outorg 'org-export-dispatch
-		       (y-or-n-p "Use whole buffer ")
-		       arg))
+                       (y-or-n-p "Use whole buffer ")
+                       arg))
 
 ;;;;; TODO org-export-insert-default-template
 
@@ -2979,8 +2979,8 @@ REFERENCE-BUFFER."
    (cond
     ((equal current-prefix-arg '(16))
      (list (y-or-n-p "Use whole buffer ")
-	   (y-or-n-p "Provide ARG ")
-	   (read-buffer "Reference-buffer: ")))
+           (y-or-n-p "Provide ARG ")
+           (read-buffer "Reference-buffer: ")))
     (current-prefix-arg (list t))
     (t nil)))
   (outshine-use-outorg
@@ -3076,7 +3076,7 @@ REFERENCE-BUFFER."
 
 ;;;;; TODO org-plot/gnuplot :plot/gnuplot:
 
-;; ;; 
+;; ;;
 ;; (defun outshine-plot/gnuplot :plot/gnuplot:(&optional arg)
 ;;   "Call outorg to trigger `org-plot/gnuplot :plot/gnuplot:'."
 ;;   (interactive "P")
@@ -3664,8 +3664,8 @@ With prefix ARG, use whole buffer."
 
 ;; FIXME
 ;; ;; C-c C-x >	org-agenda-remove-restriction-lock
-(defun outshine-agenda-remove-restriction-lock (&optional
-  include-org-p)
+(defun outshine-agenda-remove-restriction-lock
+    (&optional include-org-p)
   "Call `outshine-agenda' without restriction.
 Use `outshine-agenda-files'. When INCLUDE-ORG-P is non-nil or prefix-arg is given, include `org-agenda-files'."
   (interactive "P")
@@ -4334,16 +4334,16 @@ Use `outshine-agenda-files'. When INCLUDE-ORG-P is non-nil or prefix-arg is give
    (lambda ()
      (interactive)
      (if (not (org-on-heading-p))
-	 (if arg (org-time-stamp arg) (org-time-stamp nil))
+         (if arg (org-time-stamp arg) (org-time-stamp nil))
        (or
-	(and
-	 (re-search-forward org-element--timestamp-regexp nil t)
-	 (ignore-errors (goto-char (match-beginning 0))))
-	(and
-	 (re-search-forward org-complex-heading-regexp nil t)
-	 (ignore-errors (goto-char (match-end 4)))))
+        (and
+         (re-search-forward org-element--timestamp-regexp nil t)
+         (ignore-errors (goto-char (match-beginning 0))))
+        (and
+         (re-search-forward org-complex-heading-regexp nil t)
+         (ignore-errors (goto-char (match-end 4)))))
        (insert-char ? )
-       	 (if arg (org-time-stamp arg) (org-time-stamp nil))))))
+       (if arg (org-time-stamp arg) (org-time-stamp nil))))))
 
 ;; (defun outshine-time-stamp(&optional arg)
 ;;   "Call outorg to trigger `org-time-stamp'."
@@ -4361,20 +4361,20 @@ Use `outshine-agenda-files'. When INCLUDE-ORG-P is non-nil or prefix-arg is give
    (lambda ()
      (interactive)
      (if (not (org-on-heading-p))
-	 	 (if arg
-		     (org-time-stamp-inactive arg)
-		   (org-time-stamp-inactive))
+         (if arg
+             (org-time-stamp-inactive arg)
+           (org-time-stamp-inactive))
        (or
-	(and
-	 (re-search-forward org-element--timestamp-regexp nil t)
-	 (ignore-errors (goto-char (match-beginning 0))))
-	(and
-	 (re-search-forward org-complex-heading-regexp nil t)
-	 (ignore-errors (goto-char (match-end 4)))))
+        (and
+         (re-search-forward org-element--timestamp-regexp nil t)
+         (ignore-errors (goto-char (match-beginning 0))))
+        (and
+         (re-search-forward org-complex-heading-regexp nil t)
+         (ignore-errors (goto-char (match-end 4)))))
        (insert-char ? )
        (if arg
-	   (org-time-stamp-inactive arg)
-	 (org-time-stamp-inactive))))))
+           (org-time-stamp-inactive arg)
+         (org-time-stamp-inactive))))))
 
 ;; (defun outshine-time-stamp-inactive(&optional arg)
 ;;   "Call outorg to trigger `org-time-stamp-inactive'."
@@ -5199,7 +5199,7 @@ Use `outshine-agenda-files'. When INCLUDE-ORG-P is non-nil or prefix-arg is give
   ;; (define-key map (kbd "C-v C-M-h") 'outshine-babel-mark-block)
   (define-key map (kbd "M-+ C-M-h") 'outshine-babel-mark-block)
 
-)
+  )
 
 ;; (define-key map (kbd "<up>") 'outshine-shiftup)
 ;; (define-key map (kbd "<down>") 'outshine-shiftdown)
