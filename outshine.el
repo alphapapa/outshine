@@ -1976,7 +1976,7 @@ Essentially a much simplified version of `next-line'."
                                  (error (goto-char (point-min))))
                                t)
                         (looking-at outline-regexp))
-              (show-branches)
+              (outline-show-branches)
               (if (bobp) (throw 'exit nil))))
           (outshine--cycle-message "CONTENTS...done"))
         (setq
@@ -1984,7 +1984,7 @@ Essentially a much simplified version of `next-line'."
          outshine-current-buffer-visibility-state 'contents))
        ((eq last-command 'outshine-cycle-toc)
         ;; We just showed the table of contents - now show everything
-        (show-all)
+        (outline-show-all)
         (outshine--cycle-message "SHOW ALL")
         (setq
          this-command 'outshine-cycle-showall
@@ -2001,7 +2001,7 @@ Essentially a much simplified version of `next-line'."
                    (looking-at outline-regexp))
                  (max 1 (funcall outline-level)))
                 (t 1))))
-          (hide-sublevels toplevel))
+          (outline-hide-sublevels toplevel))
         (outshine--cycle-message "OVERVIEW")
         (setq
          this-command 'outshine-cycle-overview
@@ -2031,11 +2031,11 @@ Essentially a much simplified version of `next-line'."
            this-command 'outshine-cycle-children))
          ((eq last-command 'outshine-cycle-children)
           ;; We just showed the children, now show everything.
-          (show-subtree)
+          (outline-show-subtree)
           (outshine--cycle-message "SUBTREE"))
          (t
           ;; Default action: hide the subtree.
-          (hide-subtree)
+          (outline-hide-subtree)
           (outshine--cycle-message "FOLDED")))))
 
      ;; TAB emulation
