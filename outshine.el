@@ -1939,15 +1939,11 @@ Essentially a much simplified version of `next-line'."
   (interactive "P")
   (setq deactivate-mark t)
   (cond
-
    ((equal arg '(4))
-    ;; Run `outshine-cycle' as if at the top of the buffer.
-    (let ((outshine-org-style-global-cycling-at-bob-p nil)
-          (current-prefix-arg nil))
-      (save-excursion
-        (goto-char (point-min))
-        (outshine-cycle nil))))
-
+    ;; Run `outshine-cycle-buffer' as if at the top of the buffer.
+    (save-excursion
+      (goto-char (point-min))
+      (outshine-cycle-buffer)))
    (t
     (cond
      ;; Beginning of buffer: Global cycling
@@ -1961,50 +1957,7 @@ Essentially a much simplified version of `next-line'."
         (bobp)
         (not (outline-on-heading-p))
         outshine-org-style-global-cycling-at-bob-p))
-      (cond
-       ((eq last-command 'outshine-cycle-overview)
-        ;; We just created the overview - now do table of contents
-        ;; This can be slow in very large buffers, so indicate action
-        (outshine--cycle-message "CONTENTS...")
-        (save-excursion
-          ;; Visit all headings and show their offspring
-          (goto-char (point-max))
-          (catch 'exit
-            (while (and (progn (condition-case nil
-                                   (outline-previous-visible-heading 1)
-                                 (error (goto-char (point-min))))
-                               t)
-                        (looking-at outline-regexp))
-              (outline-show-branches)
-              (if (bobp) (throw 'exit nil))))
-          (outshine--cycle-message "CONTENTS...done"))
-        (setq
-         this-command 'outshine-cycle-toc
-         outshine-current-buffer-visibility-state 'contents))
-       ((eq last-command 'outshine-cycle-toc)
-        ;; We just showed the table of contents - now show everything
-        (outline-show-all)
-        (outshine--cycle-message "SHOW ALL")
-        (setq
-         this-command 'outshine-cycle-showall
-         outshine-current-buffer-visibility-state 'all))
-       (t
-        ;; Default action: go to overview
-        ;; (hide-sublevels 1)
-        (let ((toplevel
-               (cond
-                (current-prefix-arg
-                 (prefix-numeric-value current-prefix-arg))
-                ((save-excursion
-                   (beginning-of-line)
-                   (looking-at outline-regexp))
-                 (max 1 (funcall outline-level)))
-                (t 1))))
-          (outline-hide-sublevels toplevel))
-        (outshine--cycle-message "OVERVIEW")
-        (setq
-         this-command 'outshine-cycle-overview
-         outshine-current-buffer-visibility-state 'overview))))
+      (outshine-cycle-buffer))
 
      ((save-excursion (beginning-of-line 1) (looking-at outline-regexp))
       ;; At a heading: rotate between three different views
@@ -2048,7 +2001,48 @@ Essentially a much simplified version of `next-line'."
 (defun outshine-cycle-buffer ()
   "Cycle the visibility state of buffer."
   (interactive)
-  (outshine-cycle '(4)))
+  (save-excursion
+    (cond
+     ((eq last-command 'outshine-cycle-overview)
+      ;; We just created the overview - now do table of contents
+      ;; This can be slow in very large buffers, so indicate action
+      (outshine--cycle-message "CONTENTS...")
+      (save-excursion
+        ;; Visit all headings and show their offspring
+        (goto-char (point-max))
+        (catch 'exit
+          (while (and (progn (condition-case nil
+                                 (outline-previous-visible-heading 1)
+                               (error (goto-char (point-min))))
+                             t)
+                      (looking-at outline-regexp))
+            (outline-show-branches)
+            (if (bobp) (throw 'exit nil))))
+        (outshine--cycle-message "CONTENTS...done"))
+      (setq
+       this-command 'outshine-cycle-toc
+       outshine-current-buffer-visibility-state 'contents))
+     ((eq last-command 'outshine-cycle-toc)
+      ;; We just showed the table of contents - now show everything
+      (outline-show-all)
+      (outshine--cycle-message "SHOW ALL")
+      (setq this-command 'outshine-cycle-showall
+            outshine-current-buffer-visibility-state 'all))
+     (t
+      ;; Default action: go to overview
+      (let ((toplevel
+             (cond
+              (current-prefix-arg
+               (prefix-numeric-value current-prefix-arg))
+              ((save-excursion
+                 (beginning-of-line)
+                 (looking-at outline-regexp))
+               (max 1 (funcall outline-level)))
+              (t 1))))
+        (outline-hide-sublevels toplevel))
+      (outshine--cycle-message "OVERVIEW")
+      (setq this-command 'outshine-cycle-overview
+            outshine-current-buffer-visibility-state 'overview)))))
 
 (defun outshine--cycle-message (msg)
   "Display MSG, but avoid logging it in the *Messages* buffer."
