@@ -1289,7 +1289,7 @@ Optionally set `outline-level' to LEVEL-FN and
         (cond
          ((not folded-p) (replace-match ""))
          (folded-p (replace-match (format "%s" body-lines) nil nil nil 2)))
-      (show-entry)
+      (outline-show-entry)
       (save-excursion
         (end-of-line)
         (insert
@@ -1300,8 +1300,7 @@ Optionally set `outline-level' to LEVEL-FN and
           body-lines
           outshine-hidden-lines-cookie-right-signal-char
           outshine-hidden-lines-cookie-right-delimiter)))
-      (hide-entry))))
-
+      (outline-hide-entry))))
 ;; ;; FIXME
 ;; ;; outline-flag-region: Variable binding depth exceeds max-specpdl-size
 ;; (add-hook 'outline-view-change-hook
@@ -2111,25 +2110,25 @@ Essentially a much simplified version of `next-line'."
   (when (outline-on-heading-p)
     (cond ((and (outshine-body-p)
                 (outshine-body-visible-p))
-           (hide-entry)
-           (hide-leaves))
+           (outline-hide-entry)
+           (outline-hide-leaves))
           (t
-           (hide-subtree)))))
+           (outline-hide-subtree)))))
 
 (defun outshine-show-more ()
   (interactive)
   (when (outline-on-heading-p)
     (cond ((and (outshine-subheadings-p)
                 (not (outshine-subheadings-visible-p)))
-           (show-children))
+           (outline-show-children))
           ((and (not (outshine-subheadings-p))
                 (not (outshine-body-visible-p)))
-           (show-subtree))
+           (outline-show-subtree))
           ((and (outshine-body-p)
                 (not (outshine-body-visible-p)))
-           (show-entry))
+           (outline-show-entry))
           (t
-           (show-subtree)))))
+           (outline-show-subtree)))))
 
 ;;;;; Hidden-line-cookies commands
 
@@ -2156,7 +2155,7 @@ Essentially a much simplified version of `next-line'."
     (clone-indirect-buffer indirect-buf-name nil 'NORECORD)
     (save-excursion
       (switch-to-buffer indirect-buf-name)
-      (show-all)
+      (outline-show-all)
       (let ((indirect-buf (point-marker)))
         (outshine-write-hidden-lines-cookies)
         (switch-to-buffer (marker-buffer base-buf))
@@ -3765,7 +3764,7 @@ marking subtree (and subsequently run the tex command)."
      :active (outline-on-heading-p) :keys "M-<right>"]
     ["Hide More" outshine-hide-more
      :active (outline-on-heading-p) :keys "M-<left>"]
-    ["Show All" show-all t :keys "M-# M-a>"]
+    ["Show All" outline-show-all t :keys "M-# M-a>"]
     "--"
     ["Insert Heading" outshine-insert-heading t :keys "M-<return>"]
     ["Promote Heading" outline-promote
