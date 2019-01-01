@@ -1955,12 +1955,16 @@ Essentially a much simplified version of `next-line'."
    ;; At a heading: rotate between three different views
    ((save-excursion (beginning-of-line 1) (looking-at outline-regexp))
     (outline-back-to-heading)
-    (let ((goal-column 0) eoh eol eos)
+    (let ((goal-column 0) eoh eol eos has-children)
       ;; First, some boundaries
       (save-excursion
         (save-excursion (outshine-next-line) (setq eol (point)))
         (outline-end-of-heading)             (setq eoh (point))
         (outline-end-of-subtree)             (setq eos (point)))
+      (setq has-children
+            ;; nil if no other heading between heading and end of subtree
+            (save-excursion (end-of-line)
+                            (re-search-forward outline-regexp eos 'noerror)))
       ;; Find out what to do next and set `this-command'
       (cond
        ((= eos eoh)
@@ -1968,11 +1972,14 @@ Essentially a much simplified version of `next-line'."
         (outshine--cycle-message "EMPTY ENTRY"))
        ((>= eol eos)
         ;; Entire subtree is hidden in one line: open it
-        (outline-show-entry)
-        (outline-show-children)
-        (outshine--cycle-message "CHILDREN")
-        (setq
-         this-command 'outshine-cycle-children))
+        (if has-children
+            (progn
+              (outline-show-entry)
+              (outline-show-children)
+              (outshine--cycle-message "CHILDREN")
+              (setq this-command 'outshine-cycle-children))
+          (outline-show-subtree)
+          (outshine--cycle-message "SUBTREE (NO CHILDREN)")))
        ((eq last-command 'outshine-cycle-children)
         ;; We just showed the children, now show everything.
         (outline-show-subtree)
