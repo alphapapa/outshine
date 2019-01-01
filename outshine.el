@@ -1949,6 +1949,9 @@ Essentially a much simplified version of `next-line'."
               (not (outline-on-heading-p)))))
     (outshine-cycle-buffer))
 
+   ((derived-mode-p 'org-mode)
+    (org-cycle arg))
+
    ;; At a heading: rotate between three different views
    ((save-excursion (beginning-of-line 1) (looking-at outline-regexp))
     (outline-back-to-heading)
@@ -1991,6 +1994,8 @@ With a numeric prefix, show all headlines up to that level."
   (interactive "P")
   (save-excursion
     (cond
+     ((derived-mode-p 'org-mode)
+      (org-global-cycle arg))
      ((integerp arg)
       (outline-show-all)
       (outline-hide-sublevels arg))
