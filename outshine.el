@@ -2369,8 +2369,9 @@ marking subtree (and subsequently run the tex command)."
 
 ;;;;; Principal Keybindings
 
-(define-key outshine-mode-map
-  [remap self-insert-command] 'outshine-self-insert-command)
+(when outshine-use-speed-commands
+  (define-key outshine-mode-map
+    [remap self-insert-command] 'outshine-self-insert-command))
 
 ;; Adapted from `org-mode' and `outline-mode-easy-bindings'.
 
