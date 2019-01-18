@@ -2339,8 +2339,9 @@ marking subtree (and subsequently run the tex command)."
 
 ;; From <http://stackoverflow.com/questions/4351044/binding-m-up-m-down-in-emacs-23-1-1>.
 ;; FIXME: This should almost certainly be removed, or at least moved into the mode.
-(define-key input-decode-map "\e\eOA" [(meta up)])
-(define-key input-decode-map "\e\eOB" [(meta down)])
+(unless (display-graphic-p)
+  (define-key input-decode-map "\e\eOA" [(meta up)])
+  (define-key input-decode-map "\e\eOB" [(meta down)]))
 
 ;; Adapted from `org-mode' and `outline-mode-easy-bindings'.
 
