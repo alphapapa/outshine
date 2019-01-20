@@ -2368,19 +2368,19 @@ marking subtree (and subsequently run the tex command)."
 
 (outshine-define-key-with-fallback
     outshine-mode-map (kbd "M-S-<left>")
-  (outline-promote) (outline-on-heading-p))
+  (call-interactively 'outline-promote) (outline-on-heading-p))
 
 (outshine-define-key-with-fallback
     outshine-mode-map (kbd "M-S-<right>")
-  (outline-demote) (outline-on-heading-p))
+  (call-interactively 'outline-demote) (outline-on-heading-p))
 
 (outshine-define-key-with-fallback
     outshine-mode-map (kbd "M-S-<up>")
-  (outline-move-subtree-up) (outline-on-heading-p))
+  (call-interactively 'outline-move-subtree-up) (outline-on-heading-p))
 
 (outshine-define-key-with-fallback
     outshine-mode-map (kbd "M-S-<down>")
-  (outline-move-subtree-down) (outline-on-heading-p))
+  (call-interactively 'outline-move-subtree-down) (outline-on-heading-p))
 
 ;;;;;; Motion
 
