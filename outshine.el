@@ -1746,16 +1746,14 @@ variables: `outshine-cycle-emulate-tab` and
    ;; At a heading: rotate between three different views
    ((save-excursion (beginning-of-line 1) (looking-at outline-regexp))
     (outline-back-to-heading)
-    (let ((goal-column 0) eoh eol eos has-children)
-      ;; First, some boundaries
-      (save-excursion
-        (save-excursion (outshine-next-line) (setq eol (point)))
-        (outline-end-of-heading)             (setq eoh (point))
-        (outline-end-of-subtree)             (setq eos (point)))
-      (setq has-children
-            ;; nil if no other heading between heading and end of subtree
+    (let* ((goal-column 0)
+           ;; First, some boundaries
+           (eol (save-excursion (outshine-next-line) (point)))
+           (eoh (save-excursion (outline-end-of-heading) (point)))
+           (eos (save-excursion (outline-end-of-subtree) (point)))
+           (has-children ;; nil if no other heading between heading and end of subtree
             (save-excursion (end-of-line)
-                            (re-search-forward outline-regexp eos 'noerror)))
+                            (re-search-forward outline-regexp eos 'noerror))))
       ;; Find out what to do next and set `this-command'
       (cond
        ((= eos eoh)
