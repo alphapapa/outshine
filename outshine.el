@@ -766,9 +766,10 @@ Don't use this function, the public interface is
            ;; stay after inserted text
            (copy-marker (outshine-mimic-org-log-note-marker) t)))
       ad-do-it
-      (unless (derived-mode-p 'org-mode 'org-agenda-mode)
-        (outshine-comment-region outshine-log-note-beg-marker
-                                 outshine-log-note-end-marker))
+            (unless (derived-mode-p 'org-mode 'org-agenda-mode)
+                    (with-current-buffer (marker-buffer org-log-note-marker)
+                            (outshine-comment-region outshine-log-note-beg-marker
+                                    outshine-log-note-end-marker)))
       (move-marker outshine-log-note-beg-marker nil)
       (move-marker outshine-log-note-end-marker nil)))
 
