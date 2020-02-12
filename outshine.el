@@ -1,11 +1,11 @@
 ;;; outshine.el --- outline with outshine outshines outline
 
-;; Copyright (c) 2013-2019 Thorsten Jolitz and contributors.
+;; Copyright (c) 2013-2020 Thorsten Jolitz and contributors.
 
 ;; Author: Thorsten Jolitz
 ;; Maintainer: Thibault Polge <thibault@thb.lt>
 ;; Maintainer: Adam Porter <adam@alphapapa.net>
-;; Version: 3.1-pre
+;; Version: 4.0-pre
 ;; URL: https://github.com/alphapapa/outshine
 ;; Package-Requires: ((outorg "2.0") (cl-lib "0.5"))
 ;; Licence: GPL2+
@@ -80,136 +80,6 @@ Please report a bug if this needs to be changed.")
   ;; FIXME: Remove if possible.
   "Oldschool Emacs Lisp base for calculating `outline-regexp'.")
 
-(defconst outshine-speed-commands-default
-  '(
-    ("Outline Navigation")
-    ;; [X]
-    ("n" . (outshine-speed-move-safe
-            'outline-next-visible-heading))
-    ;; [X]
-    ("p" . (outshine-speed-move-safe
-            'outline-previous-visible-heading))
-    ;; [X]
-    ("f" . (outshine-speed-move-safe
-            'outline-forward-same-level))
-    ;; [X]
-    ("u" . (outshine-speed-move-safe
-            'outline-up-heading))
-    ;; [X]
-    ("b" . (outshine-speed-move-safe
-            'outline-backward-same-level))
-    ;; [X] similar semantics
-    ("F" . outshine-next-block)
-    ;; [X] similar semantics
-    ("B" . outshine-previous-block)
-    ;; [X] similar semantics org-goto
-    ("j" . outshine-navi)
-    ;; [X] similar semantics org-goto
-    ("J" . outshine-imenu)
-    ;; [X] similar semantics (org-refile t)
-    ;; ("g" . outshine-refile)
-    ("g" . outshine-imenu)
-    ("Outline Visibility")
-    ;; [X]
-    ("c" . outshine-cycle)
-    ;; [X]
-    ("C" . outshine-cycle-buffer)
-    ;; [X]
-    (" " . (outshine-use-outorg
-            'org-display-outline-path
-            'WHOLE-BUFFER-P))
-    ;; [X]
-    ("r" . outshine-narrow-to-subtree)
-    ;; [X]
-    ("w" . widen)
-    ;; ;; [ ]
-    ;; ("=" . outshine-columns)
-    ("Outline Structure Editing")
-    ;; [X] FIXME error with oldschool elisp headers
-    ("U" . outline-move-subtree-up)
-    ;; [X] FIXME error with oldschool elisp headers
-    ("D" . outline-move-subtree-down)
-    ;; [X]
-    ("+" . outline-demote)
-    ;; [X]
-    ("-" . outline-promote)
-    ;; [X]
-    ("i" . outshine-insert-heading)
-    ;; [X] FIXME handle markers, special cases
-    ("^" . outshine-sort-entries)
-    ;; ;; [ ]
-    ;; ("a" . (outshine-use-outorg
-    ;;      'org-archive-subtree-default-with-confirmation))
-    ;; [X]
-    ("m" . outline-mark-subtree)
-    ;; [X]
-    ("#" . outshine-toggle-comment)
-    ("Clock Commands")
-    ;; FIXME need improvements!
-    ;; [X]
-    ("I" . outshine-clock-in)
-    ;; [X]
-    ("O" . outshine-clock-out)
-    ("Date & Time Commands")
-    ;; [X]
-    ("." . outshine-time-stamp)
-    ;; [X]
-    ("!" . outshine-time-stamp-inactive)
-    ;; [X] TODO add up/down(day)
-    ("d" . outshine-deadline)
-    ;; [X]
-    ("s" . outshine-schedule)
-    ("Exporting")
-    ;; [X]
-    ("x" . outshine-export-dispatch)
-    ("Meta Data Editing")
-    ;; [X]
-    ("t" . outshine-todo)
-    ;; [X]
-    ("," . outshine-priority)
-    ;; [X]
-    ("0" . (outshine-use-outorg
-            (lambda () (interactive) (org-priority ?\ ))))
-    ;; [X]
-    ("1" . (outshine-use-outorg
-            (lambda () (interactive) (org-priority ?A))))
-    ;; [X]
-    ("2" . (outshine-use-outorg
-            (lambda () (interactive) (org-priority ?B))))
-    ;; [X]
-    ("3" . (outshine-use-outorg
-            (lambda () (interactive) (org-priority ?C))))
-    ;; [X]
-    (":" . outshine-set-tags-command)
-    ;; ;; [ ]
-    ;; ("W" . (lambda(m) (interactive "sMinutes before warning: ")
-    ;;       (outshine-entry-put (point) "APPT_WARNTIME" m)))
-    ("Properties and Effort")
-    ;; [X]
-    ("y" . outshine-set-property)
-    ;; [X]
-    ("Y" . outshine-set-property-and-value)
-    ;; [X]
-    ("e" . outshine-set-effort)
-    ;; [X]
-    ("E" . outshine-inc-effort)
-    ;; ("Agenda Views etc")
-    ;; [X]
-    ("v" . outshine-agenda)
-    ;; [X]
-    ("<" . (outshine-agenda-set-restriction-lock))
-    ;; [X]
-    (">" . (outshine-agenda-remove-restriction-lock))
-    ;; ;; CANCELLED makes no sense
-    ;; ("/" . outshine-sparse-tree)
-    ("Misc")
-    ;; [X]
-    ("o" . outshine-open-at-point)
-    ;; [X]
-    ("?" . outshine-speed-command-help)
-    )
-  "Default speed commands.")
-
 (defconst outshine-comment-tag "comment"
   "Tag that marks subtrees as commented.
 Commented subtrees do not open during visibility cycling.")
@@ -272,9 +142,6 @@ them set by set, separated by a nil element.  See the example for
   "Expression assigned to `imenu-generic-expression'.")
 
 (defvar outshine-self-insert-command-undo-counter 0
-  "Used for outshine speed-commands.")
-
-(defvar outshine-speed-command nil
   "Used for outshine speed-commands.")
 
 (defvar outshine-open-comment-trees nil
@@ -581,8 +448,6 @@ t      Everywhere except in headlines"
   :group 'outshine
   :type 'string)
 
-
-
 ;; old regexp: "[*]+"
 (defvar outshine-default-outline-regexp-base
   ;; MAYBE: Define this with a custom setter.
@@ -632,55 +497,6 @@ where speed commands should be active, e.g.:
           (const :tag "Never" nil)
           (const :tag "At beginning of headline stars" t)
           (function)))
-
-(defcustom outshine-speed-commands-user nil
-  "Alist of additional speed commands.
-This list will be checked before `outshine-speed-commands-default'
-when the variable `outshine-use-speed-commands' is non-nil
-and when the cursor is at the beginning of a headline.
-The car if each entry is a string with a single letter, which must
-be assigned to `self-insert-command' in the global map.
-The cdr is either a command to be called interactively, a function
-to be called, or a form to be evaluated.
-An entry that is just a list with a single string will be interpreted
-as a descriptive headline that will be added when listing the speed
-commands in the Help buffer using the `?' speed command."
-  :group 'outshine
-  :type '(repeat :value ("k" . ignore)
-                 (choice :value ("k" . ignore)
-                         (list :tag "Descriptive Headline" (string :tag "Headline"))
-                         (cons :tag "Letter and Command"
-                               (string :tag "Command letter")
-                               (choice (function)
-                                       (sexp))))))
-
-(defcustom outshine-speed-command-hook
-  '(outshine-speed-command-activate)
-  "Hook for activating speed commands at strategic locations.
-Hook functions are called in sequence until a valid handler is
-found.
-
-Each hook takes a single argument, a user-pressed command key
-which is also a `self-insert-command' from the global map.
-
-Within the hook, examine the cursor position and the command key
-and return nil or a valid handler as appropriate.  Handler could
-be one of an interactive command, a function, or a form.
-
-Set `outshine-use-speed-commands' to non-nil value to enable this
-hook.  The default setting is `outshine-speed-command-activate'."
-  :group 'outshine
-  :version "24.1"
-  :type 'hook)
-
-(defcustom outshine-self-insert-cluster-for-undo
-  (or (featurep 'xemacs) (version<= emacs-version "24.1"))
-  "Non-nil means cluster self-insert commands for undo when possible.
-If this is set, then, like in the Emacs command loop, 20 consecutive
-characters will be undone together.
-This is configurable, because there is some impact on typing performance."
-  :group 'outshine
-  :type 'boolean)
 
 (defcustom outshine-latex-classes
   '(("scrbook" . ((1 . "^[[:space:]]*\\\\part\\*?{\\(.+\\)}")
@@ -1266,34 +1082,7 @@ Compatibility with Emacs versions <25."
   (setq outshine-font-lock-keywords nil)
   (outshine-font-lock-flush))
 
-;;;;; Functions for speed-commands
-
-;; copied and modified from org-mode.el
-(defun outshine-print-speed-command (e)
-  (if (> (length (car e)) 1)
-      (progn
-        (princ "\n")
-        (princ (car e))
-        (princ "\n")
-        (princ (make-string (length (car e)) ?-))
-        (princ "\n"))
-    (princ (car e))
-    (princ "   ")
-    (if (symbolp (cdr e))
-        (princ (symbol-name (cdr e)))
-      (prin1 (cdr e)))
-    (princ "\n")))
-
-(defun outshine-speed-command-activate (keys)
-  "Hook for activating single-letter speed commands.
-`outshine-speed-commands-default' specifies a minimal command set.
-Use `outshine-speed-commands-user' for further customization."
-  (when (or (and (bolp)
-                 (looking-at outline-regexp))
-            (and (functionp outshine-use-speed-commands)
-                 (funcall outshine-use-speed-commands)))
-    (cdr (assoc keys (append outshine-speed-commands-user
-                             outshine-speed-commands-default)))))
+;;;;;; Functions for speed-commands
 
 (defun outshine-defkey (keymap key def)
   "Define a KEY in a KEYMAP with definition DEF."
@@ -1312,7 +1101,7 @@ COMMANDS is a list of alternating OLDDEF NEWDEF command names."
 (outshine-remap outshine-mode-map
                 'self-insert-command 'outshine-self-insert-command)
 
-;;;;; Functions for hiding comment-subtrees
+;;;;;; Functions for hiding comment-subtrees
 
 (defun outshine-hide-comment-subtrees-in-region (beg end)
   "Re-hide all comment subtrees after a visibility state change."
@@ -1355,8 +1144,6 @@ COMMANDS is a list of alternating OLDDEF NEWDEF command names."
 ;; (add-hook 'outline-view-change-hook
 ;;        'outshine-hide-comment-subtrees)
 
-
-
 (defun outshine-comment-region (beg end &optional arg)
   "Use comment-style that always inserts at BOL.
 Call `comment-region' with a comment-style that guarantees
@@ -1368,9 +1155,9 @@ Call `comment-region' with a comment-style that guarantees
            comment-style)))
     (comment-region beg end arg)))
 
-;;;;; Additional outline functions
+;;;;;; Additional outline functions
 
-;;;;;; Functions from `outline-magic'
+;;;;;;  Functions from `outline-magic'
 
 ;; FIXME: Use Org or outline- replacements for as many of these as possible.
 
@@ -1529,7 +1316,7 @@ If yes, return this character."
   "Test if a level should not be changed by level promotion/demotion."
   (>= level 1000))
 
-;;;;; Special Case Latex-Mode
+;;;;;; Special Case Latex-Mode
 
 ;; (defun outshine-get-latex-documentclass (&optional buf-or-name no-check-p)
 ;;   "Return latex document class of current-buffer.
@@ -1555,7 +1342,7 @@ If yes, return this character."
 ;;                           nil 'NOERROR 1)
 ;;        (org-no-properties (match-string 1))))))))
 
-;;;;; Agenda Functions
+;;;;;; Agenda Functions
 
 ;; (defun outshine-agenda-create-temporary-agenda-file (&optional restriction-lock buf-or-name pos)
 ;;   "Create a single temporary outshine agenda file.
@@ -1624,8 +1411,8 @@ If yes, return this character."
 ;;   (setq org-agenda-files outshine-agenda-old-org-agenda-files)
 ;;   (setq outshine-agenda-old-org-agenda-files nil))
 
-;;;; Commands
-;;;;; Additional outline commands
+;;;;;; Commands
+;;;;;; Additional outline commands
 ;;;;;; Commands from `outline-magic'
 
 (defun outshine-next-line ()
@@ -1792,8 +1579,6 @@ With a numeric prefix ARG, show all headlines up to that level."
   (message "Silent visibility cycling %s"
            (if outshine-cycle-silently "enabled" "disabled")))
 
-
-
 ;;;;;; Commands from `outline-mode-easy-bindings'
 
 ;; Copied from: http://emacswiki.org/emacs/OutlineMinorMode
@@ -1851,7 +1636,7 @@ With a numeric prefix ARG, show all headlines up to that level."
           (t
            (outline-show-subtree)))))
 
-;;;;; Hidden-line-cookies commands
+;;;;;; Hidden-line-cookies commands
 
 (defun outshine-show-hidden-lines-cookies ()
   "Show hidden-lines cookies for all visible and folded headlines."
@@ -1903,7 +1688,7 @@ With a numeric prefix ARG, show all headlines up to that level."
       (outshine-hide-hidden-lines-cookies)
     (outshine-show-hidden-lines-cookies)))
 
-;;;;; Hide comment-subtrees
+;;;;;; Hide comment-subtrees
 
 (defun outshine-insert-comment-subtree (&optional arg)
   "Insert new subtree that is tagged as comment."
@@ -1920,21 +1705,7 @@ With a numeric prefix ARG, show all headlines up to that level."
   (let ((outshine-open-comment-trees t))
     (call-interactively 'outshine-cycle)))
 
-;;;;; Speed commands
-
-(defun outshine-speed-command-help ()
-  "Show the available speed commands."
-  (interactive)
-  (if (not outshine-use-speed-commands)
-      (user-error "Speed commands are not activated, customize `outshine-use-speed-commands'")
-    (with-output-to-temp-buffer "*Help*"
-      (princ "User-defined Speed commands\n===========================\n")
-      (mapc 'outshine-print-speed-command outshine-speed-commands-user)
-      (princ "\n")
-      (princ "Built-in Speed commands\n=======================\n")
-      (mapc 'outshine-print-speed-command outshine-speed-commands-default))
-    (with-current-buffer "*Help*"
-      (setq truncate-lines t))))
+;;;;;; Speed commands utilities
 
 (defun outshine-speed-move-safe (cmd)
   "Execute CMD, but make sure that the cursor always ends up in a headline.
@@ -1946,62 +1717,7 @@ If not, return to the original position and throw an error."
       (goto-char pos)
       (error "Boundary reached while executing %s" cmd))))
 
-
-(defun outshine-self-insert-command (N)
-  "Like `self-insert-command', use overwrite-mode for whitespace in tables.
-If the cursor is in a table looking at whitespace, the whitespace is
-overwritten, and the table is not marked as requiring realignment."
-  (interactive "p")
-  ;; (outshine-check-before-invisible-edit 'insert)
-  (cond
-   ((and outshine-use-speed-commands
-         (let ((kv (this-command-keys-vector)))
-           (setq outshine-speed-command
-                 (run-hook-with-args-until-success
-                  'outshine-speed-command-hook
-                  (make-string 1 (aref kv (1- (length kv))))))))
-    ;; (setq outshine-speed-command
-    ;;       (run-hook-with-args-until-success
-    ;;        'outshine-speed-command-hook
-    ;;  (this-command-keys)))
-    (cond
-     ((commandp outshine-speed-command)
-      (setq this-command outshine-speed-command)
-      (call-interactively outshine-speed-command))
-     ((functionp outshine-speed-command)
-      (funcall outshine-speed-command))
-     ((and outshine-speed-command (listp outshine-speed-command))
-      (eval outshine-speed-command))
-     (t (let (outshine-use-speed-commands)
-          (call-interactively 'outshine-self-insert-command)))))
-   (t
-    (self-insert-command N)
-    (if outshine-self-insert-cluster-for-undo
-        (if (not (eq last-command 'outshine-self-insert-command))
-            (setq outshine-self-insert-command-undo-counter 1)
-          (if (>= outshine-self-insert-command-undo-counter 20)
-              (setq outshine-self-insert-command-undo-counter 1)
-            (and (> outshine-self-insert-command-undo-counter 0)
-                 buffer-undo-list (listp buffer-undo-list)
-                 (not (cadr buffer-undo-list)) ; remove nil entry
-                 (setcdr buffer-undo-list (cddr buffer-undo-list)))
-            (setq outshine-self-insert-command-undo-counter
-                  (1+ outshine-self-insert-command-undo-counter))))))))
-
-;; comply with `delete-selection-mode' and `electric-pair-mode'
-(put 'outshine-self-insert-command 'delete-selection
-     (lambda ()
-       (not (run-hook-with-args-until-success
-             'self-insert-uses-region-functions))))
-
-;; trigger company idle completion like namesake command
-(put 'outshine-self-insert-command 'company-begin t)
-
-;; trigger eldoc (elisp help in echo area), like `self-insert-command'
-(with-eval-after-load 'eldoc
-  (eldoc-add-command 'outshine-self-insert-command))
-
-;;;;; Other Commands
+;;;;;; Other Commands
 
 (defun outshine-eval-lisp-subtree ()
   "Mark subtree at point and call `eval-region' on it."
@@ -2045,7 +1761,7 @@ This function is the outshine replacement for `org-goto'."
       (navi-search-and-switch)
     (message "Install navi-mode.el for this command to work")))
 
-;;;;; Overridden outline commands
+;;;;;; Overridden outline commands
 
 ;; overriding 'outline-insert-heading'
 ;; copied and adapted form outline.el, taking into account modes
@@ -2080,7 +1796,7 @@ This function takes `comment-end' into account."
          (forward-char -1))
     (run-hooks 'outline-insert-heading-hook)))
 
-;;;;; iMenu and idoMenu Support
+;;;;;; iMenu and idoMenu Support
 
 (defun outshine-imenu-with-navi-regexp
     (kbd-key &optional PREFER-IMENU-P LAST-PARENTH-EXPR-P)
@@ -2162,7 +1878,6 @@ i.e. the text following the regexp match until the next space character."
         (or outshine-imenu-default-generic-expression
             outshine-imenu-preliminary-generic-expression)))
 
-
 (defun outshine-imenu (&optional PREFER-IMENU-P)
   "Convenience function for calling imenu/idomenu from outshine."
   (interactive "P")
@@ -2184,7 +1899,7 @@ i.e. the text following the regexp match until the next space character."
                (imenu-choose-buffer-index
                 "Headline: ")))))
 
-;;;;; Special Case Latex-mode
+;;;;;; Special Case Latex-mode
 
 (defun outshine-latex-insert-header (&optional buf-or-name pt-or-marker)
   "Insert outshine-header for section at point in latex-buffer.
@@ -2440,10 +2155,181 @@ marking subtree (and subsequently run the tex command)."
 (define-key outshine-mode-map
   [M-down] 'outline-next-visible-heading)
 
-;;;;; Other Keybindings
-;; refer to Key Bindings section in outshine-org-cmds.el
+;;;;;; Speed commands
 
-;;;; Footer
+(defun outshine-run-speed-command-p ()
+  (and
+   outshine-use-speed-commands
+   (outline-on-heading-p)
+   (>= (point) (match-beginning 0))
+   (<= (point) (match-end 0))
+   (if (functionp outshine-use-speed-commands) (funcall outshine-use-speed-commands) t)))
+
+;;;;;;; Outline Navigation
+
+(outshine-define-key outshine-mode-map (kbd "n") (lambda () (interactive) (outshine-speed-move-safe 'outline-next-visible-heading))
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "p") (lambda () (interactive) (outshine-speed-move-safe 'outline-previous-visible-heading))
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "f") (lambda () (interactive) (outshine-speed-move-safe 'outline-forward-same-level))
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "u") (lambda () (interactive) (outshine-speed-move-safe 'outline-up-heading))
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "b") (lambda () (interactive) (outshine-speed-move-safe 'outline-backward-same-level))
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "F") 'outshine-next-block
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "B") 'outshine-previous-block
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "j") 'outshine-navi
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "J") 'outshine-imenu
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "g") 'outshine-imenu
+  (outshine-run-speed-command-p))
+
+;;;;;;; Outline Visibility
+
+(outshine-define-key outshine-mode-map (kbd "c") 'outshine-cycle
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "C") 'outshine-cycle-buffer
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd  "r") 'outshine-narrow-to-subtree
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "w") 'widen
+  (outshine-run-speed-command-p))
+
+;;;;;;; Structure editing
+
+(outshine-define-key outshine-mode-map (kbd "U") 'outline-move-subtree-up
+  (outshine-run-speed-command-p))
+
+;; [X] FIXME error with oldschool elisp headers. FIXME' is this still relevant?
+(outshine-define-key outshine-mode-map (kbd "D") 'outline-move-subtree-down
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "+") 'outline-demote
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "-") 'outline-promote
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "i") 'outshine-insert-heading
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "^") 'outshine-sort-entries
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "m") 'outline-mark-subtree
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "#") 'outshine-toggle-comment
+  (outshine-run-speed-command-p))
+
+;;;;;;; Clock Commands
+;; FIXME need improvements!
+
+(outshine-define-key outshine-mode-map (kbd "I") 'outshine-clock-in
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "O") 'outshine-clock-out
+  (outshine-run-speed-command-p))
+
+;;;;;;; Date & Time Commands
+
+(outshine-define-key outshine-mode-map (kbd ".") 'outshine-time-stamp
+  (outshine-run-speed-command-p))
+;; [X]
+(outshine-define-key outshine-mode-map (kbd "!") 'outshine-time-stamp-inactive
+  (outshine-run-speed-command-p))
+;; [X] TODO add up/down(day)
+(outshine-define-key outshine-mode-map (kbd "d") 'outshine-deadline
+  (outshine-run-speed-command-p))
+;; [X]
+(outshine-define-key outshine-mode-map (kbd "s") 'outshine-schedule
+  (outshine-run-speed-command-p))
+
+;;;;;;; Exporting
+
+(outshine-define-key outshine-mode-map (kbd "x") 'outshine-export-dispatch
+  (outshine-run-speed-command-p))
+
+;;;;;;; Meta Data Editing
+
+(outshine-define-key outshine-mode-map (kbd "t") 'outshine-todo
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd ",") 'outshine-priority
+  (outshine-run-speed-command-p))
+;; [X]
+(outshine-define-key outshine-mode-map (kbd "0")
+  (lambda (nil) (interactive)
+    '(outshine-use-outorg
+      (lambda () (interactive) (org-priority ?\ ))))
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "1") (lambda (nil) (interactive)
+                                 '(outshine-use-outorg
+                                   (lambda () (interactive) (org-priority ?A))))
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "2") (lambda (nil) (interactive)
+                                 '(outshine-use-outorg
+                                   (lambda () (interactive) (org-priority ?B))))
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "3") (lambda (nil) (interactive)
+                                 '(outshine-use-outorg
+                                   (lambda () (interactive) (org-priority ?C))))
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd ":") 'outshine-set-tags-command
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "y") 'outshine-set-property
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "Y") 'outshine-set-property-and-value
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "e") 'outshine-set-effort
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "E") 'outshine-inc-effort
+  (outshine-run-speed-command-p))
+
+;;;;;;; Agenda Views etc
+
+(outshine-define-key outshine-mode-map (kbd "v") 'outshine-agenda
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "<") '(outshine-agenda-set-restriction-lock)
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd ">") '(outshine-agenda-remove-restriction-lock)
+  (outshine-run-speed-command-p))
+
+;;;;;;; Misc
+
+(outshine-define-key outshine-mode-map (kbd "o") 'outshine-open-at-point
+  (outshine-run-speed-command-p))
+
+(outshine-define-key outshine-mode-map (kbd "?") 'outshine-speed-command-help
+  (outshine-run-speed-command-p))
+
+;;; Footer
 
 (provide 'outshine)
 
