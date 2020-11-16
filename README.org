@@ -74,6 +74,7 @@ If you experience issues with Emacs not recognizing these bindings when running 
 
 +  ~imenu~ is supported with the command ~outshine-imenu~.
 +  Show the number of hidden lines in folded headlines with the command ~outshine-show-hidden-lines-cookies~.
++  Change the default ellipsis text by customizing ~outshine-ellipsis~ and restarting the mode.
 +  ~latex-mode~ commands:
      -  ~outshine-latex-insert-header~
      -  ~outshine-latex-insert-headers-in-buffer~
