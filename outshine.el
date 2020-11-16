@@ -727,6 +727,11 @@ significant."
   :group 'outshine
   :type 'boolean)
 
+(defcustom outshine-ellipsis nil
+  "Non-nil nor empty changes what is appended at the end of all closed headings."
+  :group 'outshine
+  :type '(choice (const :tag "Default" nil)
+                 (string :tag "String" :value " …")))
 ;;;; Minor mode
 
 ;;;###autoload
@@ -802,7 +807,8 @@ Don't use this function, the public interface is
             (`nil nil)
             ((pred functionp) (funcall outshine-fontify))
             (_ (user-error "Invalid value for variable `outshine-fontify'")))
-      (outshine-fontify-headlines out-regexp))))
+      (outshine-fontify-headlines out-regexp)))
+  (outshine-update-ellipsis))
 
 (defun outshine--minor-mode-deactivate ()
   "Deactivate Outshine.
@@ -1623,6 +1629,25 @@ If yes, return this character."
 ;; `outshine-agenda-old-org-agenda-files'."
 ;;   (setq org-agenda-files outshine-agenda-old-org-agenda-files)
 ;;   (setq outshine-agenda-old-org-agenda-files nil))
+
+;;;;; Update ellipsis
+(defun outshine-update-ellipsis ()
+  "Update `buffer-display-table' with the new value from `outshine-ellipsis'.
+
+If `outshine-ellipsis' is not nil nor empty, update the
+`selective-display' value of the current display-table with the
+value from `outshine-ellipsis'. The resulting display-table is
+always assigned to `buffer-display-table'."
+  (when (and (stringp outshine-ellipsis) (not (equal "" outshine-ellipsis)))
+    (let* ((old-dt (or
+                    (window-display-table)
+                    buffer-display-table
+                    standard-display-table))
+           (display-table (or old-dt (make-display-table))))
+
+      (set-display-table-slot display-table 'selective-display
+                              (string-to-vector outshine-ellipsis))
+      (setq-local buffer-display-table display-table))))
 
 ;;;; Commands
 ;;;;; Additional outline commands
