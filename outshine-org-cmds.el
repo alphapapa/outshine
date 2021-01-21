@@ -4339,7 +4339,7 @@ Use `outshine-agenda-files'. When INCLUDE-ORG-P is non-nil or prefix-arg is give
   (outshine-use-outorg
    (lambda ()
      (interactive)
-     (if (not (org-on-heading-p))
+     (if (not (org-at-heading-p))
 	 (if arg (org-time-stamp arg) (org-time-stamp nil))
        (or
 	(and
@@ -4366,7 +4366,7 @@ Use `outshine-agenda-files'. When INCLUDE-ORG-P is non-nil or prefix-arg is give
   (outshine-use-outorg
    (lambda ()
      (interactive)
-     (if (not (org-on-heading-p))
+     (if (not (org-at-heading-p))
 	 	 (if arg
 		     (org-time-stamp-inactive arg)
 		   (org-time-stamp-inactive))
